@@ -8,30 +8,51 @@ const store = new Vuex.Store({
         todoList : []
     },
     getters: {
-        getList : (state)=>{
+        getList: state => {
             return state.todoList
         },
-        selectList : (state)=>(type)=> {
+        selectList: state => type => {
             return state.todoList.filter( ele => ele.done === type)
+        },
+        detail: state => idx => {
+            return state.todoList[idx]
         }
     },
     mutations: {
-        addList: function(state, payload) {
+        beginning(state) {
+            const Todo = localStorage.getItem("Todo");
+            if(Todo) {
+                const list = JSON.parse(Todo);
+                state.todoList = list.todoList
+            }
+            return
+        },
+        addTodo(state, payload) {
             return state.todoList.push(payload);
         },
-        stateChange: function(state, payload) {
-            // 질문 할 것.
-            let todoList = state.todoList;
-            return todoList[payload].done = !todoList[payload].done;
+        removeTodo(state, payload) {
+            const newList = state.todoList.filter( ele => ele.idx !== payload);
+            const reset = state.todoList = newList.map((ele, idx) => {
+                return Object.assign({}, ele, {
+                    idx : idx
+                })
+            });
+            return state.todoList = reset
         },
-        removeList: function(state, payload) {
-            const update = state.todoList.filter(ele => ele.idx !== payload)
-            const newTodoList = update.map(ele=>{
-                Object.assign({},ele,{
-                    idx : payload
-                });
-            })
-            return state.todoList = newTodoList;
+        changeTodo(state, payload) {
+            let todo = state.todoList;
+            return todo[payload].done = !todo[payload].done
+        },
+        localSave: function(state) {
+            const todoList = JSON.stringify(state);
+            localStorage.setItem("Todo", todoList);
+        }
+    },
+    actions: {
+        addList: function (context) {
+            return setTimeout(function(){
+                context.commit("localSave");
+            },0)
         }
     }
 });
